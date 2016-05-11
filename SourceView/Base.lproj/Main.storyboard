@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="9059" systemVersion="14F27" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9059"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
         <capability name="box content view" minToolsVersion="7.0"/>
+        <capability name="stacking Non-gravity area distributions on NSStackView" minToolsVersion="7.0" minSystemVersion="10.11"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -798,6 +799,7 @@
                     <splitViewItems>
                         <splitViewItem holdingPriority="200" id="VwC-aO-Kox"/>
                         <splitViewItem holdingPriority="199" id="s6M-qb-2UV"/>
+                        <splitViewItem id="Dtw-RM-IK4"/>
                     </splitViewItems>
                     <splitView key="splitView" autosaveName="SplitViewAutoSave" dividerStyle="thin" vertical="YES" id="t9w-Zo-pSk">
                         <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
@@ -810,11 +812,36 @@
                         <outlet property="view" destination="t9w-Zo-pSk" id="37R-2f-7WZ"/>
                         <segue destination="wxf-YY-m1Q" kind="relationship" relationship="splitItems" id="C0c-tp-SSo"/>
                         <segue destination="7Im-CO-h25" kind="relationship" relationship="splitItems" id="8nr-UX-Pza"/>
+                        <segue destination="9fJ-wU-pmX" kind="relationship" relationship="splitItems" id="Bh4-iE-r1w"/>
                     </connections>
                 </splitViewController>
                 <customObject id="hfA-pU-UDO" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="73" y="1126"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="nnd-fe-4JE">
+            <objects>
+                <viewController id="9fJ-wU-pmX" sceneMemberID="viewController">
+                    <view key="view" id="poW-TK-hIk">
+                        <rect key="frame" x="0.0" y="0.0" width="192" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SNw-w5-W8T">
+                                <rect key="frame" x="0.0" y="0.0" width="192" height="300"/>
+                            </stackView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="SNw-w5-W8T" firstAttribute="top" secondItem="poW-TK-hIk" secondAttribute="top" id="23F-BZ-7h3"/>
+                            <constraint firstAttribute="trailing" secondItem="SNw-w5-W8T" secondAttribute="trailing" id="D9a-PX-3od"/>
+                            <constraint firstAttribute="bottom" secondItem="SNw-w5-W8T" secondAttribute="bottom" id="Ohl-Tf-rtJ"/>
+                            <constraint firstItem="SNw-w5-W8T" firstAttribute="leading" secondItem="poW-TK-hIk" secondAttribute="leading" id="piC-kz-xaT"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <customObject id="OLY-Mv-UZQ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="365" y="1459"/>
         </scene>
         <!--MyDetailViewController-->
         <scene sceneID="wOg-Ur-llV">
@@ -942,7 +969,7 @@ Gw
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uII-SD-3wj">
                                 <rect key="frame" x="0.0" y="0.0" width="410" height="444"/>
                                 <clipView key="contentView" id="JvE-2Y-4IH">
-                                    <rect key="frame" x="1" y="1" width="408" height="442"/>
+                                    <rect key="frame" x="1" y="1" width="408" height="427"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="2Ka-8S-hg0" id="uxB-tI-Xqc">
@@ -952,7 +979,7 @@ Gw
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                             <tableColumns>
-                                                <tableColumn identifier="MainCell" width="405.45703125" minWidth="40" maxWidth="1000" id="2Ka-8S-hg0">
+                                                <tableColumn identifier="MainCell" width="404.95703125" minWidth="40" maxWidth="1000" id="2Ka-8S-hg0">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Items">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -1021,7 +1048,7 @@ Gw
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="SRi-UX-blc"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="v0h-lT-PDO">
-                                    <rect key="frame" x="1" y="119" width="223" height="15"/>
+                                    <rect key="frame" x="1" y="428" width="408" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="oLK-VY-jQs">

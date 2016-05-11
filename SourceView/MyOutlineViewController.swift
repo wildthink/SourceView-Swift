@@ -664,14 +664,23 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                     result = .Move
                     
                     let dropLocation = (item as! NSTreeNode).representedObject as! BaseNode  // item we are dropping on
-                    let draggedItem = self.dragNodesArray![0].representedObject as! BaseNode
+//                    let draggedItem = self.dragNodesArray![0].representedObject as! BaseNode
                     
-                    // don't allow an item to drop onto itself, or within it's content
-                    if dropLocation === draggedItem ||
-                        dropLocation.isDescendantOfNodes([draggedItem])
-                    {
-                        result = .None
+                    if let draggedItem = self.dragNodesArray?[0].representedObject as? BaseNode {
+                        // don't allow an item to drop onto itself, or within it's content
+                        if dropLocation === draggedItem ||
+                            dropLocation.isDescendantOfNodes([draggedItem])
+                        {
+                            result = .None
+                        }
                     }
+
+//                    // don't allow an item to drop onto itself, or within it's content
+//                    if dropLocation === draggedItem ||
+//                        dropLocation.isDescendantOfNodes([draggedItem])
+//                    {
+//                        result = .None
+//                    }
                 }
             }
         }
