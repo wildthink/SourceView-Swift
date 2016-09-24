@@ -23,9 +23,9 @@ class ChildEditViewController: NSViewController {
     
     var savedValues: [String: String] = [:]
     
-    @IBOutlet private weak var doneButton: NSButton!
-    @IBOutlet private weak var nameField: NSTextField!
-    @IBOutlet private weak var urlField: NSTextField!
+    @IBOutlet fileprivate weak var doneButton: NSButton!
+    @IBOutlet fileprivate weak var nameField: NSTextField!
+    @IBOutlet fileprivate weak var urlField: NSTextField!
     
     
     //MARK: -
@@ -38,13 +38,13 @@ class ChildEditViewController: NSViewController {
         
         self.nameField.stringValue = self.savedValues[kName_Key] ?? ""
         self.urlField.stringValue = self.savedValues[kURL_Key] ?? ""
-        self.doneButton.enabled = self.doneAllowed
+        self.doneButton.isEnabled = self.doneAllowed
     }
     
     // -------------------------------------------------------------------------------
     //	doneAllowed
     // -------------------------------------------------------------------------------
-    private var doneAllowed: Bool {
+    fileprivate var doneAllowed: Bool {
         return (!self.nameField.stringValue.isEmpty && !self.urlField.stringValue.isEmpty)
     }
     
@@ -70,7 +70,7 @@ class ChildEditViewController: NSViewController {
     // -------------------------------------------------------------------------------
     //	clearValues
     // -------------------------------------------------------------------------------
-    private func clearValues() {
+    fileprivate func clearValues() {
         self.nameField.stringValue = ""
         self.urlField.stringValue = ""
     }
@@ -88,8 +88,8 @@ class ChildEditViewController: NSViewController {
     //
     //  For this to be called, we need to be a delegate to both NSTextFields
     // -------------------------------------------------------------------------------
-    override func controlTextDidChange(obj: NSNotification) {
-        self.doneButton.enabled = self.doneAllowed
+    override func controlTextDidChange(_ obj: Notification) {
+        self.doneButton.isEnabled = self.doneAllowed
     }
     
 }

@@ -56,9 +56,9 @@ private let kNodesPBoardType		= "myNodesPBoardType"	// drag and drop pasteboard 
 class TreeAdditionObj: NSObject {
     
     //private(set) weak var indexPath: NSIndexPath?
-    private(set) var nodeURL: String?
-    private(set) var nodeName: String?
-    private(set) var selectItsParent: Bool
+    fileprivate(set) var nodeURL: String?
+    fileprivate(set) var nodeName: String?
+    fileprivate(set) var selectItsParent: Bool
     
     
     //MARK: -
@@ -85,21 +85,21 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     
     @IBOutlet var treeController: NSTreeController!
     
-    @IBOutlet private weak var myOutlineView: NSOutlineView!
-    @IBOutlet private weak var placeHolderView: NSView!
+    @IBOutlet fileprivate weak var myOutlineView: NSOutlineView!
+    @IBOutlet fileprivate weak var placeHolderView: NSView!
     
     // cached images for generic folder and url document
-    private var folderImage: NSImage!
-    private var urlImage: NSImage!
+    fileprivate var folderImage: NSImage!
+    fileprivate var urlImage: NSImage!
     
-    private var dragNodesArray: [NSTreeNode]?
+    fileprivate var dragNodesArray: [NSTreeNode]?
     dynamic var contents: [AnyObject] = []
     
-    private var iconViewController: IconViewController!
-    private var fileViewController: FileViewController!
-    private var webViewController: WebViewController!
+    fileprivate var iconViewController: IconViewController!
+    fileprivate var fileViewController: FileViewController!
+    fileprivate var webViewController: WebViewController!
     
-    private var childEditWindowController: NSWindowController!
+    fileprivate var childEditWindowController: NSWindowController!
     
     
     //MARK: -
@@ -108,63 +108,63 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         super.viewDidLoad()
         
         // load the icon view controller for later use
-        iconViewController = self.storyboard!.instantiateControllerWithIdentifier(ICONVIEW_IDENTIFIER) as! IconViewController
+        iconViewController = self.storyboard!.instantiateController(withIdentifier: ICONVIEW_IDENTIFIER) as! IconViewController
         self.iconViewController.view.translatesAutoresizingMaskIntoConstraints = false
         
         // load the file view controller for later use
-        fileViewController = self.storyboard!.instantiateControllerWithIdentifier(FILEVIEW_IDENTIFIER) as! FileViewController
+        fileViewController = self.storyboard!.instantiateController(withIdentifier: FILEVIEW_IDENTIFIER) as! FileViewController
         self.fileViewController.view.translatesAutoresizingMaskIntoConstraints = false
         
         // load the web view controller for later use
-        webViewController = self.storyboard!.instantiateControllerWithIdentifier(WEBVIEW_IDENTIFIER) as! WebViewController
+        webViewController = self.storyboard!.instantiateController(withIdentifier: WEBVIEW_IDENTIFIER) as! WebViewController
         self.webViewController.view.translatesAutoresizingMaskIntoConstraints = false
         
         // load the child edit view controller for later use
-        childEditWindowController = self.storyboard!.instantiateControllerWithIdentifier(CHILDEDIT_IDENTIFIER) as! NSWindowController
+        childEditWindowController = self.storyboard!.instantiateController(withIdentifier: CHILDEDIT_IDENTIFIER) as! NSWindowController
         
         // cache the reused icon images
-        folderImage = NSWorkspace.sharedWorkspace().iconForFileType(NSFileTypeForHFSTypeCode(OSType(kGenericFolderIcon)))
+        folderImage = NSWorkspace.shared().icon(forFileType: NSFileTypeForHFSTypeCode(OSType(kGenericFolderIcon)))
         self.folderImage.size = NSMakeSize(kIconImageSize, kIconImageSize)
         
-        urlImage = NSWorkspace.sharedWorkspace().iconForFileType(NSFileTypeForHFSTypeCode(OSType(kGenericURLIcon)))
+        urlImage = NSWorkspace.shared().icon(forFileType: NSFileTypeForHFSTypeCode(OSType(kGenericURLIcon)))
         self.urlImage.size = NSMakeSize(kIconImageSize, kIconImageSize)
         
         self.populateOutlineContents()
         
         // scroll to the top in case the outline contents is very long
         self.myOutlineView.enclosingScrollView?.verticalScroller?.floatValue = 0.0
-        self.myOutlineView.enclosingScrollView?.contentView.scrollToPoint(NSMakePoint(0,0))
+        self.myOutlineView.enclosingScrollView?.contentView.scroll(to: NSMakePoint(0,0))
         
         // make our outline view appear with gradient selection, and behave like the Finder, iTunes, etc.
-        self.myOutlineView.selectionHighlightStyle = .SourceList
+        self.myOutlineView.selectionHighlightStyle = .sourceList
         
         // drag and drop support
-        self.myOutlineView.registerForDraggedTypes([kNodesPBoardType,			// our internal drag type
+        self.myOutlineView.register(forDraggedTypes: [kNodesPBoardType,			// our internal drag type
             NSURLPboardType,			// single url from pasteboard
             NSFilenamesPboardType,		// from Safari or Finder
             NSFilesPromisePboardType])
         
         // notification to add a folder
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "addFolder:",
-            name: kAddFolderNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(MyOutlineViewController.addFolder(_:)),
+            name: NSNotification.Name(rawValue: kAddFolderNotification),
             object: nil)
         // notification to remove a folder
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "removeFolder:",
-            name: kRemoveFolderNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(MyOutlineViewController.removeFolder(_:)),
+            name: NSNotification.Name(rawValue: kRemoveFolderNotification),
             object: nil)
         
         // notification to add a bookmark
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "addBookmark:",
-            name: kAddBookmarkNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(MyOutlineViewController.addBookmark(_:)),
+            name: NSNotification.Name(rawValue: kAddBookmarkNotification),
             object: nil)
         
         // notification to edit a bookmark
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "editBookmark:",
-            name: kEditBookmarkNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(MyOutlineViewController.editBookmark(_:)),
+            name: NSNotification.Name(rawValue: kEditBookmarkNotification),
             object: nil)
     }
     
@@ -172,10 +172,10 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //	dealloc
     // -------------------------------------------------------------------------------
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: kAddFolderNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: kRemoveFolderNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: kAddBookmarkNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: kEditBookmarkNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: kAddFolderNotification), object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: kRemoveFolderNotification), object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: kAddBookmarkNotification), object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: kEditBookmarkNotification), object: nil)
     }
     
     
@@ -186,10 +186,10 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	Take the currently selected node and select its parent.
     // -------------------------------------------------------------------------------
-    private func selectParentFromSelection() {
+    fileprivate func selectParentFromSelection() {
         if !self.treeController.selectedNodes.isEmpty {
             let firstSelectedNode = self.treeController.selectedNodes[0]
-            if let parentNode = firstSelectedNode.parentNode {
+            if let parentNode = firstSelectedNode.parent {
                 // select the parent
                 let parentIndex = parentNode.indexPath
                 self.treeController.setSelectionIndexPath(parentIndex)
@@ -204,14 +204,14 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	performAddFolder:treeAddition
     // -------------------------------------------------------------------------------
-    private func performAddFolder(treeAddition: TreeAdditionObj) {
+    fileprivate func performAddFolder(_ treeAddition: TreeAdditionObj) {
         // NSTreeController inserts objects using NSIndexPath, so we need to calculate this
-        var indexPath: NSIndexPath
+        var indexPath: IndexPath
         
         // if there is no selection, we will add a new group to the end of the contents array
         if self.treeController.selectedObjects.isEmpty {
             // there's no selection so add the folder to the top-level and at the end
-            indexPath = NSIndexPath(index: self.contents.count)
+            indexPath = IndexPath(index: self.contents.count)
         } else {
             // get the index of the currently selected node, then add the number its children to the path -
             // this will give us an index which will allow us to add a node to the end of the currently selected node's children array.
@@ -222,7 +222,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                 // so deselect child and select its parent for addition
                 self.selectParentFromSelection()
             } else {
-                indexPath = indexPath.indexPathByAddingIndex((self.treeController.selectedObjects[0] as! BaseNode).children.count)
+                indexPath.append((self.treeController.selectedObjects[0] as! BaseNode).children.count)
             }
         }
         
@@ -230,13 +230,13 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         node.nodeTitle = treeAddition.nodeName ?? ""
         
         // the user is adding a child node, tell the controller directly
-        self.treeController.insertObject(node, atArrangedObjectIndexPath: indexPath)
+        self.treeController.insert(node, atArrangedObjectIndexPath: indexPath)
     }
     
     // -------------------------------------------------------------------------------
     //	performAddChild:treeAddition
     // -------------------------------------------------------------------------------
-    private func performAddChild(treeAddition: TreeAdditionObj) {
+    fileprivate func performAddChild(_ treeAddition: TreeAdditionObj) {
         if !self.treeController.selectedObjects.isEmpty {
             // we have a selection
             if (self.treeController.selectedObjects[0] as! BaseNode).isLeaf {
@@ -246,14 +246,14 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         }
         
         // find the selection to insert our node
-        var indexPath: NSIndexPath
+        var indexPath: IndexPath
         if !self.treeController.selectedObjects.isEmpty {
             // we have a selection, insert at the end of the selection
             indexPath = self.treeController.selectionIndexPath!
-            indexPath = indexPath.indexPathByAddingIndex((self.treeController.selectedObjects[0] as! BaseNode).children.count)
+            indexPath.append((self.treeController.selectedObjects[0] as! BaseNode).children.count)
         } else {
             // no selection, just add the child to the end of the tree
-            indexPath = NSIndexPath(index: self.contents.count)
+            indexPath = IndexPath(index: self.contents.count)
         }
         
         // create a leaf node
@@ -266,7 +266,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                 if let name = treeAddition.nodeName {
                     node.nodeTitle = name
                 } else {
-                    node.nodeTitle = NSFileManager.defaultManager().displayNameAtPath(url)
+                    node.nodeTitle = FileManager.default.displayName(atPath: url)
                 }
             } else {
                 // the child to insert will be an empty URL
@@ -276,7 +276,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         }
         
         // the user is adding a child node, tell the controller directly
-        self.treeController.insertObject(node, atArrangedObjectIndexPath: indexPath)
+        self.treeController.insert(node, atArrangedObjectIndexPath: indexPath)
         
         // adding a child automatically becomes selected by NSOutlineView, so keep its parent selected
         if treeAddition.selectItsParent {
@@ -287,7 +287,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	addChild:url:withName:selectParent
     // -------------------------------------------------------------------------------
-    private func addChild(url: String?, withName nameStr: String?, selectParent select: Bool) {
+    fileprivate func addChild(_ url: String?, withName nameStr: String?, selectParent select: Bool) {
         let treeObjInfo = TreeAdditionObj(URL: url,
             withName: nameStr,
             selectItsParent: select)
@@ -297,7 +297,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	addEntries:discloseParent:
     // -------------------------------------------------------------------------------
-    private func addEntries(entries: [NSDictionary], discloseParent: Bool) {
+    fileprivate func addEntries(_ entries: [NSDictionary], discloseParent: Bool) {
         for entry in entries {
             let urlStr = entry[KEY_URL] as? String
             
@@ -339,12 +339,12 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	Populate the tree controller from disk-based dictionary (Outline.dict)
     // -------------------------------------------------------------------------------
-    private func populateOutline() {
+    fileprivate func populateOutline() {
         // add the "Bookmarks" section
         self.addFolderWithName(BOOKMARKS_NAME)
         
-        let initData = NSDictionary(contentsOfURL:
-            NSBundle.mainBundle().URLForResource(INITIAL_INFODICT, withExtension: "dict")!)!
+        let initData = NSDictionary(contentsOf:
+            Bundle.main.url(forResource: INITIAL_INFODICT, withExtension: "dict")!)!
         let entries = initData[KEY_ENTRIES] as! [NSDictionary] //###
         self.addEntries(entries, discloseParent: true)
         
@@ -354,14 +354,14 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	addPlacesSection
     // -------------------------------------------------------------------------------
-    private func addPlacesSection() {
+    fileprivate func addPlacesSection() {
         // add the "Places" section
         self.addFolderWithName(PLACES_NAME)
         
         // add its children
         self.addChild(NSHomeDirectory(), withName: "Home", selectParent: true)
         
-        let appsURLs = NSFileManager.defaultManager().URLsForDirectory(.ApplicationDirectory, inDomains: .LocalDomainMask)
+        let appsURLs = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask)
         self.addChild(appsURLs[0].path, withName: nil, selectParent: true)
         
         self.selectParentFromSelection()
@@ -370,9 +370,9 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	populateOutlineContents
     // -------------------------------------------------------------------------------
-    private func populateOutlineContents() {
+    fileprivate func populateOutlineContents() {
         // hide the outline view - don't show it as we are building the content
-        self.myOutlineView.hidden = true
+        self.myOutlineView.isHidden = true
         
         self.addPlacesSection()		// add the "Places" outline section
         self.populateOutline()			// add the "Bookmark" outline content
@@ -381,16 +381,16 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         let selection = self.treeController.selectionIndexPaths
         self.treeController.removeSelectionIndexPaths(selection)
         
-        self.myOutlineView.hidden = false	// we are done populating the outline view content, show it again
+        self.myOutlineView.isHidden = false	// we are done populating the outline view content, show it again
     }
     
     // -------------------------------------------------------------------------------
     //	textFieldAction:sender
     // -------------------------------------------------------------------------------
-    @IBAction func textFieldAction(textField: NSTextField) {
+    @IBAction func textFieldAction(_ textField: NSTextField) {
         // user was done editing an item, assign the new text value to it's represented object
         let selectedRow = self.myOutlineView.selectedRow
-        let node = self.myOutlineView.itemAtRow(selectedRow)!.representedObject as! BaseNode
+        let node = (self.myOutlineView.item(atRow: selectedRow)! as AnyObject).representedObject as! BaseNode
         node.nodeTitle = textField.stringValue
     }
     
@@ -400,14 +400,14 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	isSeparator:node
     // -------------------------------------------------------------------------------
-    private func isSeparator(node: BaseNode) -> Bool {
+    fileprivate func isSeparator(_ node: BaseNode) -> Bool {
         return (node.nodeIcon == nil && node.nodeTitle.isEmpty)
     }
     
     // -------------------------------------------------------------------------------
     //	isSpecialGroup:groupNode
     // -------------------------------------------------------------------------------
-    private func isSpecialGroup(groupNode: BaseNode) -> Bool {
+    fileprivate func isSpecialGroup(_ groupNode: BaseNode) -> Bool {
         return (groupNode.nodeIcon == nil &&
             (groupNode.nodeTitle == BOOKMARKS_NAME || groupNode.nodeTitle == PLACES_NAME))
     }
@@ -418,7 +418,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	addFolder:folderName
     // -------------------------------------------------------------------------------
-    private func addFolderWithName(folderName: String) {
+    fileprivate func addFolderWithName(_ folderName: String) {
         let treeObjInfo = TreeAdditionObj(URL: nil, withName: folderName, selectItsParent: false)
         self.performAddFolder(treeObjInfo)
     }
@@ -428,7 +428,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //  Notification sent from PrimaryViewController class, to add a folder.
     // -------------------------------------------------------------------------------
-    @objc func addFolder(notif: NSNotification) {
+    @objc func addFolder(_ notif: Notification) {
         self.addFolderWithName(UNTITLED_NAME)
     }
     
@@ -437,7 +437,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //  Notification sent from PrimaryViewController class, to add a folder.
     // -------------------------------------------------------------------------------
-    @objc func removeFolder(notif: NSNotification) {
+    @objc func removeFolder(_ notif: Notification) {
         self.treeController.remove(self)
     }
     
@@ -446,13 +446,13 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //  Notification sent from PrimaryViewController class, to add a bookmark
     // -------------------------------------------------------------------------------
-    @objc func addBookmark(notif: NSNotification) {
+    @objc func addBookmark(_ notif: Notification) {
         self.view.window?.beginSheet(self.childEditWindowController.window!) {returnCode in
             if returnCode == NSModalResponseOK {
                 let childEditViewController = self.childEditWindowController.contentViewController as! ChildEditViewController
                 
                 let name: String
-                if let itemStr = childEditViewController.savedValues[kName_Key] where !itemStr.isEmpty {
+                if let itemStr = childEditViewController.savedValues[kName_Key] , !itemStr.isEmpty {
                     name = itemStr
                 } else {
                     name = UNTITLED_NAME
@@ -469,7 +469,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //  Notification sent from PrimaryViewController class, to edit a bookmark
     // -------------------------------------------------------------------------------
-    @objc func editBookmark(notif: NSNotification) {
+    @objc func editBookmark(_ notif: Notification) {
         let childEditViewController = self.childEditWindowController.contentViewController as! ChildEditViewController
         
         // get the selected item's name and url
@@ -479,7 +479,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         if node.urlString == nil || node.urlString!.isEmpty || !node.isBookmark {
             // it's a folder or a file-system based object, just allow editing the cell title
             let selectedRow = self.myOutlineView.selectedRow
-            self.myOutlineView.editColumn(0, row: selectedRow, withEvent: NSApp.currentEvent, select: true)
+            self.myOutlineView.editColumn(0, row: selectedRow, with: NSApp.currentEvent, select: true)
         } else {
             childEditViewController.savedValues = [kName_Key : node.nodeTitle, kURL_Key : node.urlString!]
             self.view.window?.beginSheet(self.childEditWindowController.window!) {returnCode in
@@ -488,7 +488,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                     let childNode = ChildNode(leaf: ())
                     childNode.urlString = childEditViewController.savedValues[kURL_Key]
                     if let newNodeStr = childEditViewController.savedValues[kName_Key]
-                        where !newNodeStr.isEmpty {
+                        , !newNodeStr.isEmpty {
                             childNode.nodeTitle = newNodeStr
                     } else {
                         childNode.nodeTitle = UNTITLED_NAME
@@ -497,7 +497,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                     // remove the current selection and replace it with the newly edited child
                     let indexPath = self.treeController.selectionIndexPath!
                     self.treeController.remove(self)
-                    self.treeController.insertObject(childNode, atArrangedObjectIndexPath: indexPath)
+                    self.treeController.insert(childNode, atArrangedObjectIndexPath: indexPath)
                 }
             }
         }
@@ -509,10 +509,10 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //  viewControllerForSelection:selection
     // -------------------------------------------------------------------------------
-    func viewControllerForSelection(selection: [NSTreeNode]?) -> NSViewController? {
+    func viewControllerForSelection(_ selection: [NSTreeNode]?) -> NSViewController? {
         var returnViewController: NSViewController? = nil
         
-        if let selection = selection where selection.count == 1 {
+        if let selection = selection , selection.count == 1 {
             let node = selection[0].representedObject as! BaseNode
             if let urlStr = node.urlString {
                 if node.isBookmark {
@@ -524,7 +524,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                     
                     self.webViewController.retargetWebView = true
                 } else {
-                    let url = NSURL(fileURLWithPath: urlStr)
+                    let url = URL(fileURLWithPath: urlStr)
                     
                     // detect if the url is a directory
                     if node.isDirectory {
@@ -553,7 +553,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	shouldSelectItem:item
     // -------------------------------------------------------------------------------
-    func outlineView(outlineView: NSOutlineView, shouldSelectItem item: AnyObject) -> Bool {
+    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         // don't allow special group nodes (Places and Bookmarks) to be selected
         let node = (item as! NSTreeNode).representedObject as! BaseNode
         return !isSpecialGroup(node) && !isSeparator(node)
@@ -562,18 +562,18 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	viewForTableColumn:tableColumn:item
     // -------------------------------------------------------------------------------
-    func outlineView(outlineView: NSOutlineView, viewForTableColumn tableColumn: NSTableColumn?, item: AnyObject) -> NSView? {
-        var result = outlineView.makeViewWithIdentifier(tableColumn?.identifier ?? "", owner: self)
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        var result = outlineView.make(withIdentifier: tableColumn?.identifier ?? "", owner: self)
         
         if let node = (item as! NSTreeNode).representedObject as? BaseNode {
             if self.outlineView(outlineView, isGroupItem: item) {
                 let identifier = outlineView.tableColumns[0].identifier
-                result = outlineView.makeViewWithIdentifier(identifier, owner: self)
-                let value = node.nodeTitle.uppercaseString
+                result = outlineView.make(withIdentifier: identifier, owner: self)
+                let value = node.nodeTitle.uppercased()
                 (result as? NSTableCellView)?.textField?.stringValue = value
             } else if isSeparator(node) {
                 // separators have no title or icon, just use the custom view to draw it
-                result = outlineView.makeViewWithIdentifier("Separator", owner: self)
+                result = outlineView.make(withIdentifier: "Separator", owner: self)
             } else {
                 (result as? NSTableCellView)?.textField?.stringValue = node.nodeTitle
                 
@@ -584,11 +584,11 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
                         if node.isBookmark {
                             iconImage = self.urlImage
                         } else {
-                            iconImage = NSWorkspace.sharedWorkspace().iconForFile(urlStr)
+                            iconImage = NSWorkspace.shared().icon(forFile: urlStr)
                         }
                         node.nodeIcon = iconImage
                         
-                        (result as? NSTableCellView)?.textField?.editable = true
+                        (result as? NSTableCellView)?.textField?.isEditable = true
                     } else {
                         // it's a separator, don't bother with the icon
                     }
@@ -609,7 +609,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // -------------------------------------------------------------------------------
     //	textShouldEndEditing:fieldEditor
     // -------------------------------------------------------------------------------
-    func control(control: NSControl, textShouldEndEditing fieldEditor: NSText) -> Bool {
+    func control(_ control: NSControl, textShouldEndEditing fieldEditor: NSText) -> Bool {
         // don't allow empty node names
         return !(fieldEditor.string?.isEmpty ?? true)
     }
@@ -617,7 +617,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // ----------------------------------------------------------------------------------------
     // outlineView:isGroupItem:item
     // ----------------------------------------------------------------------------------------
-    func outlineView(outlineView: NSOutlineView, isGroupItem item: AnyObject) -> Bool {
+    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool {
         return isSpecialGroup((item as! NSTreeNode).representedObject as! BaseNode)
     }
     
@@ -627,7 +627,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     // ----------------------------------------------------------------------------------------
     // outlineView:writeItems:toPasteboard
     // ----------------------------------------------------------------------------------------
-    func outlineView(ov: NSOutlineView, writeItems items: [AnyObject], toPasteboard pboard: NSPasteboard) -> Bool {
+    func outlineView(_ ov: NSOutlineView, writeItems items: [Any], to pboard: NSPasteboard) -> Bool {
         pboard.declareTypes([kNodesPBoardType], owner: self)
         
         // keep track of this nodes for drag feedback in "validateDrop"
@@ -641,36 +641,38 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	This method is used by NSOutlineView to determine a valid drop target.
     // -------------------------------------------------------------------------------
-    func outlineView(ov: NSOutlineView,
+    func outlineView(_ ov: NSOutlineView,
         validateDrop info: NSDraggingInfo,
-        proposedItem item: AnyObject?,
+        proposedItem item: Any?,
         proposedChildIndex index: Int) -> NSDragOperation
     {
-        var result = NSDragOperation.None
+        var result = NSDragOperation()
         
         if item == nil {
             // no item to drop on
-            result = .Generic
+            result = .generic
         } else {
             if isSpecialGroup((item as! NSTreeNode).representedObject as! BaseNode) {
                 // don't allow dragging into special grouped sections (i.e. Places and Bookmarks)
-                result = .None
+                result = NSDragOperation()
             } else {
                 if index == -1 {
                     // don't allow dropping on a child
-                    result = .None
+                    result = NSDragOperation()
                 } else {
                     // drop location is a container
-                    result = .Move
-                    
-                    let dropLocation = (item as! NSTreeNode).representedObject as! BaseNode  // item we are dropping on
-                    let draggedItem = self.dragNodesArray![0].representedObject as! BaseNode
-                    
+                    result = .move
+                     // item we are dropping on
+                    guard let dropLocation = (item as! NSTreeNode).representedObject as? BaseNode,
+                          let draggedItem = self.dragNodesArray?.first?.representedObject as? BaseNode
+                            else { return NSDragOperation() }
+//                    guard let draggedItem = self.dragNodesArray.first.representedObject as? BaseNode
+
                     // don't allow an item to drop onto itself, or within it's content
                     if dropLocation === draggedItem ||
                         dropLocation.isDescendantOfNodes([draggedItem])
                     {
-                        result = .None
+                        result = NSDragOperation()
                     }
                 }
             }
@@ -684,12 +686,12 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	The user is dragging URLs from Safari.
     // -------------------------------------------------------------------------------
-    private func handleWebURLDrops(pboard: NSPasteboard, withIndexPath indexPath: NSIndexPath) {
-        let pbArray = pboard.propertyListForType("WebURLsWithTitlesPboardType") as! [[String]]
+    fileprivate func handleWebURLDrops(_ pboard: NSPasteboard, withIndexPath indexPath: IndexPath) {
+        let pbArray = pboard.propertyList(forType: "WebURLsWithTitlesPboardType") as! [[String]]
         let urlArray = pbArray[0]
         let nameArray = pbArray[1]
         
-        for i in (0..<urlArray.count).reverse() {
+        for i in (0..<urlArray.count).reversed() {
             let node = ChildNode()
             
             node.isLeaf = true
@@ -697,7 +699,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
             node.nodeTitle = nameArray[i]
             
             node.urlString = urlArray[i]
-            self.treeController.insertObject(node, atArrangedObjectIndexPath: indexPath)
+            self.treeController.insert(node, atArrangedObjectIndexPath: indexPath)
         }
     }
     
@@ -706,18 +708,18 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	The user is doing an intra-app drag within the outline view.
     // -------------------------------------------------------------------------------
-    private func handleInternalDrops(pboard: NSPasteboard, withIndexPath indexPath: NSIndexPath) {
+    fileprivate func handleInternalDrops(_ pboard: NSPasteboard, withIndexPath indexPath: IndexPath) {
         // user is doing an intra app drag within the outline view:
         //
         let newNodes = self.dragNodesArray!
         
         // move the items to their new place (we do this backwards, otherwise they will end up in reverse order)
-        for idx in (0..<newNodes.count).reverse() {
-            self.treeController.moveNode(newNodes[idx], toIndexPath: indexPath)
+        for idx in (0..<newNodes.count).reversed() {
+            self.treeController.move(newNodes[idx], to: indexPath)
         }
         
         // keep the moved nodes selected
-        var indexPathList: [NSIndexPath] = []
+        var indexPathList: [IndexPath] = []
         for node in newNodes {
             indexPathList.append(node.indexPath)
         }
@@ -729,21 +731,21 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	The user is dragging file-system based objects (probably from Finder)
     // -------------------------------------------------------------------------------
-    private func handleFileBasedDrops(pboard: NSPasteboard, withIndexPath indexPath: NSIndexPath) {
-        guard let fileNames = pboard.propertyListForType(NSFilenamesPboardType) as? [String]
-            where !fileNames.isEmpty else {return}
+    fileprivate func handleFileBasedDrops(_ pboard: NSPasteboard, withIndexPath indexPath: IndexPath) {
+        guard let fileNames = pboard.propertyList(forType: NSFilenamesPboardType) as? [String]
+            , !fileNames.isEmpty else {return}
         
-        for fileName in fileNames.lazy.reverse() {
+        for fileName in fileNames.lazy.reversed() {
             let node = ChildNode()
             
-            let url = NSURL(fileURLWithPath: fileName)
-            let name = NSFileManager.defaultManager().displayNameAtPath(url.path!)
+            let url = URL(fileURLWithPath: fileName)
+            let name = FileManager.default.displayName(atPath: url.path)
             node.isLeaf = true
             
             node.nodeTitle = name
             node.urlString = url.path
             
-            self.treeController.insertObject(node, atArrangedObjectIndexPath: indexPath)
+            self.treeController.insert(node, atArrangedObjectIndexPath: indexPath)
         }
     }
     
@@ -752,13 +754,13 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //
     //	Handle dropping a raw URL.
     // -------------------------------------------------------------------------------
-    private func handleURLBasedDrops(pboard: NSPasteboard, withIndexPath indexPath: NSIndexPath) {
-        guard let url = NSURL(fromPasteboard: pboard) else {return}
+    fileprivate func handleURLBasedDrops(_ pboard: NSPasteboard, withIndexPath indexPath: IndexPath) {
+        guard let url = NSURL(from: pboard) else {return}
         let node = ChildNode()
         
-        if url.fileURL {
+        if url.isFileURL {
             // url is file-based, use it's display name
-            let name = NSFileManager.defaultManager().displayNameAtPath(url.path!)
+            let name = FileManager.default.displayName(atPath: url.path!)
             node.nodeTitle = name
             node.urlString = url.path
         } else {
@@ -768,12 +770,12 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
             if url.pathComponents?.count == 1 {
                 if node.isBookmark {
                     // use the url portion without the prefix
-                    let prefixRange = url.absoluteString.rangeOfString(HTTP_PREFIX)!
-                    let newRange = prefixRange.endIndex..<url.absoluteString.endIndex.predecessor()
-                    node.nodeTitle = url.absoluteString.substringWithRange(newRange)
+                    let prefixRange = url.absoluteString!.range(of: HTTP_PREFIX)!
+                    let newRange = prefixRange.upperBound..<url.absoluteString!.characters.index(before: url.absoluteString!.endIndex)
+                    node.nodeTitle = url.absoluteString!.substring(with: newRange)
                 } else {
                     // prefix unknown, just use the url as its title
-                    node.nodeTitle = url.absoluteString
+                    node.nodeTitle = url.absoluteString!
                 }
             } else {
                 // use the last portion of the URL as its title
@@ -784,7 +786,7 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
         }
         node.isLeaf = true
         
-        self.treeController.insertObject(node, atArrangedObjectIndexPath: indexPath)
+        self.treeController.insert(node, atArrangedObjectIndexPath: indexPath)
     }
     
     // -------------------------------------------------------------------------------
@@ -795,42 +797,42 @@ class MyOutlineViewController: NSViewController, NSOutlineViewDelegate, NSOutlin
     //	'index' is the location to insert the data as a child of 'item', and are the values previously set in the validateDrop: method.
     //
     // -------------------------------------------------------------------------------
-    func outlineView(ov: NSOutlineView, acceptDrop info: NSDraggingInfo, item targetItem: AnyObject?, childIndex index: Int) -> Bool {
+    func outlineView(_ ov: NSOutlineView, acceptDrop info: NSDraggingInfo, item targetItem: Any?, childIndex index: Int) -> Bool {
         // note that "targetItem" is a NSTreeNode proxy
         //
         var result = false
         
         // find the index path to insert our dropped object(s)
-        let indexPath: NSIndexPath
+        let indexPath: IndexPath
         if targetItem != nil {
             // drop down inside the tree node:
             // feth the index path to insert our dropped node
-            indexPath = targetItem!.indexPath!!.indexPathByAddingIndex(index)
+            indexPath = (targetItem! as AnyObject).indexPath!!.appending(index)
         } else {
             // drop at the top root level
             if index == -1 {	// drop area might be ambibuous (not at a particular location)
-                indexPath = NSIndexPath(index: self.contents.count) // drop at the end of the top level
+                indexPath = IndexPath(index: self.contents.count) // drop at the end of the top level
             } else {
-                indexPath = NSIndexPath(index: index) // drop at a particular place at the top level
+                indexPath = IndexPath(index: index) // drop at a particular place at the top level
             }
         }
         
         let pboard = info.draggingPasteboard()	// get the pasteboard
         
         // check the dragging type -
-        if pboard.availableTypeFromArray([kNodesPBoardType]) != nil {
+        if pboard.availableType(from: [kNodesPBoardType]) != nil {
             // user is doing an intra-app drag within the outline view
             self.handleInternalDrops(pboard, withIndexPath: indexPath)
             result = true
-        } else if pboard.availableTypeFromArray(["WebURLsWithTitlesPboardType"]) != nil {
+        } else if pboard.availableType(from: ["WebURLsWithTitlesPboardType"]) != nil {
             // the user is dragging URLs from Safari
             self.handleWebURLDrops(pboard, withIndexPath: indexPath)
             result = true
-        } else if pboard.availableTypeFromArray([NSFilenamesPboardType]) != nil {
+        } else if pboard.availableType(from: [NSFilenamesPboardType]) != nil {
             // the user is dragging file-system based objects (probably from Finder)
             self.handleFileBasedDrops(pboard, withIndexPath: indexPath)
             result = true
-        } else if pboard.availableTypeFromArray([NSURLPboardType]) != nil {
+        } else if pboard.availableType(from: [NSURLPboardType]) != nil {
             // handle dropping a raw URL
             self.handleURLBasedDrops(pboard, withIndexPath: indexPath)
             result = true

@@ -20,7 +20,7 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     
     dynamic var nodeTitle: String
     dynamic var nodeIcon: NSImage?
-    private var _children: [BaseNode] = []
+    fileprivate var _children: [BaseNode] = []
     dynamic var urlString: String?
     dynamic var isLeaf: Bool = false	// is container by default
     
@@ -44,7 +44,7 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     // -------------------------------------------------------------------------------
     //	setLeaf:flag
     // -------------------------------------------------------------------------------
-    private func setLeaf(flag: Bool) {
+    fileprivate func setLeaf(_ flag: Bool) {
         self.isLeaf = flag
     }
     
@@ -87,9 +87,9 @@ class BaseNode: NSObject, NSCoding, NSCopying {
             
             if let urlString = self.urlString {
                 var isURLDirectory: AnyObject? = nil
-                let url = NSURL(fileURLWithPath: urlString)
+                let url = URL(fileURLWithPath: urlString)
                 
-                _ = try? url.getResourceValue(&isURLDirectory, forKey: NSURLIsDirectoryKey)
+                _ = try? (url as NSURL).getResourceValue(&isURLDirectory, forKey: URLResourceKey.isDirectoryKey)
                 
                 directory = (isURLDirectory as? NSNumber)?.boolValue ?? false
             }
@@ -106,8 +106,8 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     // -------------------------------------------------------------------------------
     //	compare:aNode
     // -------------------------------------------------------------------------------
-    func compare(aNode: BaseNode) -> NSComparisonResult {
-        return (self.nodeTitle.lowercaseString as NSString).compare(aNode.nodeTitle.lowercaseString)
+    func compare(_ aNode: BaseNode) -> ComparisonResult {
+        return (self.nodeTitle.lowercased() as NSString).compare(aNode.nodeTitle.lowercased())
     }
     
     
@@ -119,11 +119,11 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     //	Recursive method which searches children and children of all sub-nodes
     //	to remove the given object.
     // -------------------------------------------------------------------------------
-    func removeObjectFromChildren(obj: BaseNode) {
+    func removeObjectFromChildren(_ obj: BaseNode) {
         // remove object from children or the children of any sub-nodes
-        for (index, node) in self.children.enumerate() {
+        for (index, node) in self.children.enumerated() {
             if node === obj {
-                self.children.removeAtIndex(index)
+                self.children.remove(at: index)
                 return
             }
             
@@ -191,7 +191,7 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     //	Returns YES if self is contained anywhere inside the children or children of
     //	sub-nodes of the nodes contained inside the given array.
     // -------------------------------------------------------------------------------
-    func isDescendantOfOrOneOfNodes(nodes: [BaseNode]) -> Bool {
+    func isDescendantOfOrOneOfNodes(_ nodes: [BaseNode]) -> Bool {
         // returns YES if we are contained anywhere inside the array passed in, including inside sub-nodes
         for node in nodes {
             if node === self {
@@ -214,7 +214,7 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     //
     //	Returns YES if any node in the array passed in is an ancestor of ours.
     // -------------------------------------------------------------------------------
-    func isDescendantOfNodes(nodes: [BaseNode]) -> Bool {
+    func isDescendantOfNodes(_ nodes: [BaseNode]) -> Bool {
         for node in nodes {
             // check all the sub-nodes
             if !node.isLeaf {
@@ -247,18 +247,18 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     // -------------------------------------------------------------------------------
     //	initWithDictionary:dictionary
     // -------------------------------------------------------------------------------
-    required convenience init(dictionary: [NSObject: AnyObject]) {
+    required convenience init(dictionary: [AnyHashable: Any]) {
         self.init()
         for key in self.mutableKeys {
             if key == "children" {
                 if dictionary["isLeaf"] as! Bool {
                     self.setLeaf(true)
                 } else {
-                    let dictChildren = dictionary[key] as! [[NSObject: AnyObject]]
+                    let dictChildren = dictionary[key] as! [[AnyHashable: Any]]
                     var newChildren: [BaseNode] = []
                     
                     for node in dictChildren {
-                        let newNode = self.dynamicType.init(dictionary: node)
+                        let newNode = type(of: self).init(dictionary: node)
                         newChildren.append(newNode)
                     }
                     self.children = newChildren
@@ -272,21 +272,21 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     // -------------------------------------------------------------------------------
     //	dictionaryRepresentation
     // -------------------------------------------------------------------------------
-    func dictionaryRepresentation() -> [NSObject: AnyObject] {
-        var dictionary: [NSObject: AnyObject] =  [:]
+    func dictionaryRepresentation() -> [AnyHashable: Any] {
+        var dictionary: [AnyHashable: Any] =  [:]
         
         for key in self.mutableKeys {
             // convert all children to dictionaries
             if key == "children" {
                 if !self.isLeaf {
-                    var dictChildren: [[NSObject: AnyObject]] = []
+                    var dictChildren: [[AnyHashable: Any]] = []
                     for node in self.children {
                         dictChildren.append(node.dictionaryRepresentation())
                     }
                     
                     dictionary[key] = dictChildren
                 }
-            } else if let value: AnyObject = self.valueForKey(key) {
+            } else if let value: AnyObject = self.value(forKey: key) as AnyObject? {
                 dictionary[key] = value
             }
         }
@@ -299,27 +299,27 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     required convenience init?(coder: NSCoder) {
         self.init()
         for key in self.mutableKeys {
-            self.setValue(coder.decodeObjectForKey(key), forKey: key)
+            self.setValue(coder.decodeObject(forKey: key), forKey: key)
         }
     }
     
     // -------------------------------------------------------------------------------
     //	encodeWithCoder:coder
     // -------------------------------------------------------------------------------
-    func encodeWithCoder(coder: NSCoder) {
+    func encode(with coder: NSCoder) {
         for key in self.mutableKeys {
-            coder.encodeObject(self.valueForKey(key), forKey: key)
+            coder.encode(self.value(forKey: key), forKey: key)
         }
     }
     
     // -------------------------------------------------------------------------------
     //	copyWithZone:zone
     // -------------------------------------------------------------------------------
-    func copyWithZone(zone: NSZone) -> AnyObject {
-        let newNode = self.dynamicType.init() as BaseNode
+    func copy(with zone: NSZone?) -> Any {
+        let newNode = type(of: self).init() as BaseNode
         
         for key in self.mutableKeys {
-            newNode.setValue(self.valueForKey(key), forKey: key)
+            newNode.setValue(self.value(forKey: key), forKey: key)
         }
         
         return newNode
@@ -330,7 +330,7 @@ class BaseNode: NSObject, NSCoding, NSCopying {
     //
     //	Override this for any non-object values
     // -------------------------------------------------------------------------------
-    override func setNilValueForKey(key: String) {
+    override func setNilValueForKey(_ key: String) {
         if key == "isLeaf" {
             self.isLeaf = false
         } else {

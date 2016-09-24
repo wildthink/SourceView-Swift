@@ -17,8 +17,8 @@ import Cocoa
 @objc(MySplitViewController)
 class MySplitViewController: NSSplitViewController {
     
-    private var verticalConstraints: [NSLayoutConstraint] = []
-    private var horizontalConstraints: [NSLayoutConstraint] = []
+    fileprivate var verticalConstraints: [NSLayoutConstraint] = []
+    fileprivate var horizontalConstraints: [NSLayoutConstraint] = []
     
     
     //MARK: -
@@ -38,7 +38,7 @@ class MySplitViewController: NSSplitViewController {
         //
         self.outlineViewController.treeController.addObserver(self,
             forKeyPath: "selectedObjects",
-            options: .New,
+            options: .new,
             context: nil)
     }
     
@@ -53,7 +53,7 @@ class MySplitViewController: NSSplitViewController {
     // -------------------------------------------------------------------------------
     //	outlineViewController
     // -------------------------------------------------------------------------------
-    private var outlineViewController: MyOutlineViewController {
+    fileprivate var outlineViewController: MyOutlineViewController {
         let leftSplitViewItem = self.splitViewItems[0]
         return leftSplitViewItem.viewController as! MyOutlineViewController
     }
@@ -61,7 +61,7 @@ class MySplitViewController: NSSplitViewController {
     // -------------------------------------------------------------------------------
     //	detailViewController
     // -------------------------------------------------------------------------------
-    private var detailViewController: NSViewController {
+    fileprivate var detailViewController: NSViewController {
         let rightSplitViewItem = self.splitViewItems[1]
         return rightSplitViewItem.viewController
     }
@@ -69,14 +69,14 @@ class MySplitViewController: NSSplitViewController {
     // -------------------------------------------------------------------------------
     //	hasChildViewController
     // -------------------------------------------------------------------------------
-    private var hasChildViewController: Bool {
+    fileprivate var hasChildViewController: Bool {
         return !self.detailViewController.childViewControllers.isEmpty
     }
     
     // -------------------------------------------------------------------------------
     //	embedChildViewController:childViewController
     // -------------------------------------------------------------------------------
-    private func embedChildViewController(childViewController: NSViewController) {
+    fileprivate func embedChildViewController(_ childViewController: NSViewController) {
         // to embed a new child view controller we have to add it and its view, then setup auto layout contraints
         //
         let currentDetailVC = self.detailViewController
@@ -84,26 +84,26 @@ class MySplitViewController: NSSplitViewController {
         currentDetailVC.view.addSubview(childViewController.view)
         
         let views = ["targetView" : childViewController.view]
-        horizontalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("H:|[targetView]|",
+        horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|[targetView]|",
             options: [],
             metrics: nil,
             views: views)
-        verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|[targetView]|",
+        verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[targetView]|",
             options: [],
             metrics: nil,
             views: views)
         
-        NSLayoutConstraint.activateConstraints(self.horizontalConstraints)
-        NSLayoutConstraint.activateConstraints(self.verticalConstraints)
+        NSLayoutConstraint.activate(self.horizontalConstraints)
+        NSLayoutConstraint.activate(self.verticalConstraints)
     }
     
     // -------------------------------------------------------------------------------
     //	observeValueForKeyPath:ofObject:change:context
     // -------------------------------------------------------------------------------
-    override func observeValueForKeyPath(keyPath: String?,
-        ofObject object: AnyObject?,
-        change: [String : AnyObject]?,
-        context: UnsafeMutablePointer<Void>)
+    override func observeValue(forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey : Any]?,
+        context: UnsafeMutableRawPointer?)
     {
         if keyPath == "selectedObjects" {
             let currentDetailVC = self.detailViewController
@@ -116,7 +116,7 @@ class MySplitViewController: NSSplitViewController {
                     // the incoming child view controller is different from the one we currently have,
                     // remove the old one and add the new one
                     //
-                    currentDetailVC.removeChildViewControllerAtIndex(0)
+                    currentDetailVC.removeChildViewController(at: 0)
                     self.detailViewController.view.subviews[0].removeFromSuperview()
                     
                     self.embedChildViewController(vcForDetail)
@@ -129,7 +129,7 @@ class MySplitViewController: NSSplitViewController {
             } else {
                 // we don't have a child view controller to embed (no selection), so remove current child view controller
                 if self.hasChildViewController {
-                    currentDetailVC.removeChildViewControllerAtIndex(0)
+                    currentDetailVC.removeChildViewController(at: 0)
                     self.detailViewController.view.subviews[0].removeFromSuperview()
                 }
             }

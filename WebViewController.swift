@@ -32,7 +32,7 @@ class WebViewController: NSViewController {
     //	JavaScript code thatt focus their text fields as we target the web view with a particular URL.
     //
     // -------------------------------------------------------------------------------
-    func webView(sender: WebView, makeFirstResponder responder: NSResponder) {
+    func webView(_ sender: WebView, makeFirstResponder responder: NSResponder) {
         if self.retargetWebView {
             // we are targeting the webview ourselves as a result of the user clicking
             // a url in our outlineview: don't do anything, but reset our target check flag

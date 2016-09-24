@@ -26,7 +26,7 @@ private let KEY_ICON = "icon"
 
 @objc(IconViewBox)
 class IconViewBox: NSBox {
-    override func hitTest(aPoint: NSPoint) -> NSView? {
+    override func hitTest(_ aPoint: NSPoint) -> NSView? {
         // don't allow any mouse clicks for subviews in this NSBox
         return nil
     }
@@ -38,10 +38,10 @@ class IconViewBox: NSBox {
 @objc(IconViewController)
 class IconViewController: NSViewController {
     
-    dynamic var url: NSURL?
+    dynamic var url: URL?
     
-    @IBOutlet private var iconArrayController: NSArrayController!
-    dynamic var icons: [AnyObject] = []
+    @IBOutlet fileprivate var iconArrayController: NSArrayController!
+    dynamic var icons: [Any] = []
     
     
     // -------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class IconViewController: NSViewController {
         //###Neither the receiver, nor anObserver, are retained.
         self.addObserver(self,
             forKeyPath: "url",
-            options: [.New, .Old],
+            options: [.new, .old],
             context: nil)
     }
     
@@ -68,10 +68,10 @@ class IconViewController: NSViewController {
     //
     //	The incoming object is the NSArray of file system objects to display.
     //-------------------------------------------------------------------------------
-    private func updateIcons(iconArray: [AnyObject]) {
+    fileprivate func updateIcons(_ iconArray: [Any]) {
         self.icons = iconArray
         
-        NSNotificationCenter.defaultCenter().postNotificationName(kReceivedContentNotification, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: kReceivedContentNotification), object: nil)
     }
     
     // -------------------------------------------------------------------------------
@@ -80,23 +80,23 @@ class IconViewController: NSViewController {
     //	Gathering the contents and their icons could be expensive.
     //	This method is being called on a separate thread to avoid blocking the UI.
     // -------------------------------------------------------------------------------
-    private func gatherContents(inObject: NSURL) {
-        var contentArray: [AnyObject] = []
+    fileprivate func gatherContents(_ inObject: URL) {
+        var contentArray: [Any] = []
         autoreleasepool {
             
             do {
-                let fileURLs = try NSFileManager.defaultManager().contentsOfDirectoryAtURL(self.url!,
+                let fileURLs = try FileManager.default.contentsOfDirectory(at: self.url!,
                     includingPropertiesForKeys: [],
                     options: [])
                 for element in fileURLs {
-                    let elementIcon = NSWorkspace.sharedWorkspace().iconForFile(element.path!)
+                    let elementIcon = NSWorkspace.shared().icon(forFile: element.path)
                     
                     // only allow visible objects
                     var hiddenFlag: AnyObject? = nil
-                    try element.getResourceValue(&hiddenFlag, forKey: NSURLIsHiddenKey)
+                    try (element as NSURL).getResourceValue(&hiddenFlag, forKey: URLResourceKey.isHiddenKey)
                     if !(hiddenFlag as! Bool) {
                         var elementNameStr: AnyObject? = nil
-                        try element.getResourceValue(&elementNameStr, forKey: NSURLLocalizedNameKey)
+                        try (element as NSURL).getResourceValue(&elementNameStr, forKey: URLResourceKey.localizedNameKey)
                         // file system object is visible so add to our array
                         contentArray.append([
                             "icon": elementIcon,
@@ -107,7 +107,7 @@ class IconViewController: NSViewController {
             } catch _ {}
             
             // call back on the main thread to update the icons in our view
-            dispatch_sync(dispatch_get_main_queue()) {
+            DispatchQueue.main.sync {
                 self.updateIcons(contentArray)
             }
         }
@@ -119,15 +119,15 @@ class IconViewController: NSViewController {
     //	Listen for changes in the file url.
     //	Given a url, obtain its contents and add only the invisible items to the collection.
     // -------------------------------------------------------------------------------
-    override func observeValueForKeyPath(keyPath: String?,
-        ofObject object: AnyObject?,
-        change: [String : AnyObject]?,
-        context: UnsafeMutablePointer<Void>)
+    override func observeValue(forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey : Any]?,
+        context: UnsafeMutableRawPointer?)
     {
         // build our directory contents on a separate thread,
         // some portions are from disk which could get expensive depending on the size
         //
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+        DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).async {
             self.gatherContents(self.url!)
         }
     }

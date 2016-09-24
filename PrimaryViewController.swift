@@ -26,11 +26,11 @@ let kEditBookmarkNotification = "EditBookmarkNotification"
 @objc(PrimaryViewController)
 class PrimaryViewController: NSViewController {
     
-    @IBOutlet private weak var progIndicator: NSProgressIndicator!
-    @IBOutlet private weak var removeButton: NSButton!
-    @IBOutlet private weak var actionButton: NSPopUpButton!
-    @IBOutlet private weak var urlField: NSTextField!
-    @IBOutlet private var editBookmarkMenuItem: NSMenuItem!
+    @IBOutlet fileprivate weak var progIndicator: NSProgressIndicator!
+    @IBOutlet fileprivate weak var removeButton: NSButton!
+    @IBOutlet fileprivate weak var actionButton: NSPopUpButton!
+    @IBOutlet fileprivate weak var urlField: NSTextField!
+    @IBOutlet fileprivate var editBookmarkMenuItem: NSMenuItem!
     
     //MARK: -
     
@@ -49,16 +49,16 @@ class PrimaryViewController: NSViewController {
         actionImage.size = NSMakeSize(10,10)
         
         let menuItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
-        self.actionButton.menu?.insertItem(menuItem, atIndex: 0)
+        self.actionButton.menu?.insertItem(menuItem, at: 0)
         menuItem.image = actionImage
         
         self.actionButton.menu?.autoenablesItems = false
         
         // start off by disabling the Edit... menu item until we are notified of a selection
-        self.editBookmarkMenuItem.enabled = false
+        self.editBookmarkMenuItem.isEnabled = false
         
         // truncate to the middle if the url is too long to fit
-        self.urlField.cell?.lineBreakMode = .ByTruncatingMiddle
+        self.urlField.cell?.lineBreakMode = .byTruncatingMiddle
     }
     
     // -------------------------------------------------------------------------------
@@ -70,15 +70,15 @@ class PrimaryViewController: NSViewController {
         // listen for selection changes from the NSOutlineView inside MyOutlineViewController
         // note: we start observing after our outline view is populated so we don't receive unnecessary notifications at startup
         //
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "selectionDidChange:",
-            name: NSOutlineViewSelectionDidChangeNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(PrimaryViewController.selectionDidChange(_:)),
+            name: NSNotification.Name.NSOutlineViewSelectionDidChange,
             object: nil)
         
         // notification so we know when the icon view controller is done populating its content
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "contentReceived:",
-            name: kReceivedContentNotification,
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(PrimaryViewController.contentReceived(_:)),
+            name: NSNotification.Name(rawValue: kReceivedContentNotification),
             object: nil)
     }
     
@@ -86,8 +86,8 @@ class PrimaryViewController: NSViewController {
     //	dealloc
     // -------------------------------------------------------------------------------
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: NSOutlineViewSelectionDidChangeNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: kReceivedContentNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSOutlineViewSelectionDidChange, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: kReceivedContentNotification), object: nil)
     }
     
     
@@ -99,39 +99,39 @@ class PrimaryViewController: NSViewController {
     //  Notification sent from IconViewController class,
     //  indicating the file system content has been received
     // -------------------------------------------------------------------------------
-    @objc func contentReceived(notif: NSNotification) {
-        self.progIndicator.hidden = true
+    @objc func contentReceived(_ notif: Notification) {
+        self.progIndicator.isHidden = true
         self.progIndicator.stopAnimation(self)
     }
     
     // -------------------------------------------------------------------------------
     //  Listens for changes outline view row selection
     // -------------------------------------------------------------------------------
-    @objc func selectionDidChange(notification: NSNotification) {
+    @objc func selectionDidChange(_ notification: Notification) {
         // examine the current selection and adjust the UI
         //
         let outlineView = notification.object as! NSOutlineView
         let selectedRow = outlineView.selectedRow
         if selectedRow == -1 {
             // there is no current selection - no item to display
-            self.removeButton.enabled = false
+            self.removeButton.isEnabled = false
             self.urlField.stringValue = ""
-            self.editBookmarkMenuItem.enabled = false
+            self.editBookmarkMenuItem.isEnabled = false
         } else {
             // single selection
-            self.removeButton.enabled = true
+            self.removeButton.isEnabled = true
             
             // report the URL to our NSTextField
-            let item = outlineView.itemAtRow(selectedRow)!.representedObject as! BaseNode
+            let item = (outlineView.item(atRow: selectedRow)! as AnyObject).representedObject as! BaseNode
             self.urlField.stringValue = item.urlString ?? ""
             
             // enable the Edit... menu item if the selected node is a bookmark
-            self.editBookmarkMenuItem.enabled = (item.urlString == nil) || item.isBookmark
+            self.editBookmarkMenuItem.isEnabled = (item.urlString == nil) || item.isBookmark
             
             if item.isDirectory {
                 // we are populating the detail view controler with contents of a folder on disk
                 // (may take a while)
-                self.progIndicator.hidden = false
+                self.progIndicator.isHidden = false
             }
         }
     }
@@ -144,7 +144,7 @@ class PrimaryViewController: NSViewController {
     // -------------------------------------------------------------------------------
     @IBAction func addFolderAction(_: AnyObject) {
         // post notification to MyOutlineViewController to add a new folder
-        NSNotificationCenter.defaultCenter().postNotificationName(kAddFolderNotification, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: kAddFolderNotification), object: nil)
     }
     
     // -------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ class PrimaryViewController: NSViewController {
     // -------------------------------------------------------------------------------
     @IBAction func removeFolderAction(_: AnyObject) {
         // post notification to MyOutlineViewController to remove the selected folder
-        NSNotificationCenter.defaultCenter().postNotificationName(kRemoveFolderNotification, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: kRemoveFolderNotification), object: nil)
     }
     
     
@@ -163,7 +163,7 @@ class PrimaryViewController: NSViewController {
     // -------------------------------------------------------------------------------
     @IBAction func addBookmarkAction(_: AnyObject) {
         // post notification to MyOutlineViewController to add a new bookmark
-        NSNotificationCenter.defaultCenter().postNotificationName(kAddBookmarkNotification, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: kAddBookmarkNotification), object: nil)
     }
     
     // -------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class PrimaryViewController: NSViewController {
     // -------------------------------------------------------------------------------
     @IBAction func editBookmarkAction(_: AnyObject) {
         // post notification to MyOutlineViewController to edit a selected bookmark
-        NSNotificationCenter.defaultCenter().postNotificationName(kEditBookmarkNotification, object: nil)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: kEditBookmarkNotification), object: nil)
     }
     
 }

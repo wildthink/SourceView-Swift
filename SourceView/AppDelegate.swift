@@ -25,7 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //	NSApplication delegate method placed here so the sample conveniently quits
     //	after we close the window.
     // -------------------------------------------------------------------------------
-    func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
     }
     
